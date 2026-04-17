@@ -128,3 +128,49 @@ The first DELETE returns 200 OK. Subsequent DELETE calls for the same
 room return 404 Not Found since the room no longer exists. The server 
 state remains the same after repeated calls which satisfies the practical 
 definition of idempotency.
+
+## Part 3 - Sensor Operations and Filtering
+
+### Files Added
+
+| File | Package | Purpose |
+|------|---------|---------|
+| `SensorResource.java` | `com.smartcampus.resource` | Handles all /sensors endpoints |
+| `LinkedResourceNotFoundException.java` | `com.smartcampus.exception` | Exception when roomId does not exist |
+| `LinkedResourceNotFoundExceptionMapper.java` | `com.smartcampus.exception` | Maps exception to 422 response |
+
+### Endpoints Implemented
+
+| Method | Endpoint | Description | Status Code |
+|--------|----------|-------------|-------------|
+| GET | /api/v1/sensors | Get all sensors | 200 OK |
+| GET | /api/v1/sensors?type=X | Filter sensors by type | 200 OK |
+| POST | /api/v1/sensors | Register a new sensor | 201 Created |
+| GET | /api/v1/sensors/{sensorId} | Get specific sensor | 200 OK |
+| DELETE | /api/v1/sensors/{sensorId} | Delete a sensor | 200 OK |
+
+### Business Logic
+- Sensor cannot be created if roomId does not exist in the system
+- Creating a sensor automatically adds its ID to the room sensorIds list
+- Deleting a sensor automatically removes its ID from the room sensorIds list
+- Type filtering is done via optional query parameter ?type=X
+
+### Question Answers
+
+#### Q1: What happens if client sends wrong Content-Type?
+If a client sends data as text/plain or application/xml instead of
+application/json, JAX-RS checks the @Consumes(MediaType.APPLICATION_JSON)
+annotation and immediately rejects the request with a 415 Unsupported
+Media Type response before the method even executes. The request never
+reaches the resource method logic, protecting the API from malformed
+or unexpected input formats.
+
+#### Q2: @QueryParam vs Path Parameter for Filtering
+Query parameters like ?type=CO2 are superior for filtering because they
+are optional by nature, the base endpoint /sensors still works without
+them. Path parameters like /sensors/type/CO2 make the filter mandatory
+and part of the resource identity, implying it represents a different
+resource rather than a filtered view of the same collection. Query
+parameters also support multiple filters easily such as
+?type=CO2&status=ACTIVE without changing the URL structure, making
+them far more flexible and RESTful for search and filter operations.
