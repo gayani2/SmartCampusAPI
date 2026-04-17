@@ -91,3 +91,40 @@ dynamically rather than relying on hardcoded URLs or external documentation.
 This reduces tight coupling between client and server, allows the API to 
 evolve its URL structure without breaking clients, and makes the API 
 self-describing which reduces developer onboarding time.
+
+## Part 2 - Room Management
+
+### Files Added
+| File | Package | Purpose |
+|------|---------|---------|
+| `RoomResource.java` | `com.smartcampus.resource` | Handles all /rooms endpoints |
+| `RoomNotEmptyException.java` | `com.smartcampus.exception` | Custom exception for non-empty rooms |
+| `RoomNotEmptyExceptionMapper.java` | `com.smartcampus.exception` | Maps exception to 409 response |
+
+### Endpoints Implemented
+| Method | Endpoint | Description | Status Code |
+|--------|----------|-------------|-------------|
+| GET | /api/v1/rooms | Get all rooms | 200 OK |
+| POST | /api/v1/rooms | Create a new room | 201 Created |
+| GET | /api/v1/rooms/{roomId} | Get specific room | 200 OK |
+| DELETE | /api/v1/rooms/{roomId} | Delete room | 200 OK |
+
+### Business Logic
+- A room **cannot be deleted** if it has sensors assigned
+- Attempting to delete returns **409 Conflict**
+- Duplicate room ID returns **409 Conflict**
+- Non-existent room returns **404 Not Found**
+
+### Question Answers
+
+#### Q: Returning IDs vs full room objects?
+Returning only IDs uses less bandwidth but forces the client to make 
+additional requests for each room detail, increasing API calls. Returning 
+full objects gives everything in one request but increases payload size. 
+For large datasets a summary object with key fields is the best approach.
+
+#### Q: Is DELETE idempotent?
+The first DELETE returns 200 OK. Subsequent DELETE calls for the same 
+room return 404 Not Found since the room no longer exists. The server 
+state remains the same after repeated calls which satisfies the practical 
+definition of idempotency.
