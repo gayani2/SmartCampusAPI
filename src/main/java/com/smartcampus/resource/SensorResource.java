@@ -123,6 +123,12 @@ public class SensorResource {
                 .entity("{\"message\":\"Sensor " + sensorId + " deleted successfully\"}")
                 .build();
     }
+    // Sub-resource locator for readings (Part 4)
+    @Path("/{sensorId}/readings")
+    public SensorReadingResource getReadingResource(
+            @PathParam("sensorId") String sensorId) {
+        return new SensorReadingResource(sensorId);
+    }
 
     
 }
