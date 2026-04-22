@@ -44,6 +44,7 @@ public class RoomResource {
 
         return Response.status(Response.Status.CREATED)
                 .entity(room)
+                .header("Location", "/api/v1/rooms/" + room.getId())
                 .build();
     }
 
