@@ -81,6 +81,7 @@ public class SensorResource {
 
         return Response.status(Response.Status.CREATED)
                 .entity(sensor)
+                .header("Location", "/api/v1/sensors/" + sensor.getId())
                 .build();
     }
 

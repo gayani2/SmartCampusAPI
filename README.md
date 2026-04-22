@@ -174,3 +174,47 @@ resource rather than a filtered view of the same collection. Query
 parameters also support multiple filters easily such as
 ?type=CO2&status=ACTIVE without changing the URL structure, making
 them far more flexible and RESTful for search and filter operations.
+
+## Part 4 - Sub-Resources and Sensor Readings
+
+### Files Added
+
+| File | Package | Purpose |
+|------|---------|---------|
+| `SensorReadingResource.java` | `com.smartcampus.resource` | Handles all readings endpoints |
+| `SensorUnavailableException.java` | `com.smartcampus.exception` | Exception for unavailable sensors |
+| `SensorUnavailableExceptionMapper.java` | `com.smartcampus.exception` | Maps to 403 Forbidden |
+
+### Endpoints Implemented
+
+| Method | Endpoint | Description | Status Code |
+|--------|----------|-------------|-------------|
+| GET | /api/v1/sensors/{sensorId}/readings | Get all readings | 200 OK |
+| POST | /api/v1/sensors/{sensorId}/readings | Add new reading | 201 Created |
+| GET | /api/v1/sensors/{sensorId}/readings/{readingId} | Get specific reading | 200 OK |
+
+### Business Logic
+- Cannot add reading to a MAINTENANCE sensor returns 403
+- Cannot add reading to an OFFLINE sensor returns 403
+- Adding a reading automatically updates sensor currentValue
+- Reading ID is auto generated using UUID if not provided
+- Timestamp is auto generated if not provided
+
+### Question Answers
+
+#### Q1: Benefits of Sub-Resource Locator Pattern
+The Sub-Resource Locator pattern delegates handling of nested paths to
+separate dedicated classes. This improves separation of concerns since
+each class manages only its own resource logic. It reduces complexity
+in large APIs by avoiding a single massive controller class with hundreds
+of methods. It also improves maintainability since changes to reading
+logic only affect SensorReadingResource and do not impact SensorResource.
+Each class can be tested independently making the codebase more modular
+and easier to scale as new nested resources are added.
+
+#### Q2: Side Effect of POST Reading
+A successful POST to readings triggers an update to the currentValue
+field on the parent Sensor object. This ensures data consistency across
+the API so that when a client fetches the sensor details they always
+see the most recent measurement recorded by the hardware without needing
+to query the readings list separately.
